@@ -1,0 +1,31 @@
+.signin-container {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 24px;
+    flex-wrap: wrap;
+    gap: 40px;
+}
+
+.signin-form {
+    max-width: 400px;
+    flex: 1;
+}
+
+.signin-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #222;
+}
+
+.signin-video {
+    flex: 2;
+    max-width: 700px;
+}
+
+.signin-video-element {
+    width: 100%;
+    height: auto;
+    max-height: 600px;
+    object-fit: cover;
+    border-radius: 20px;
+}

@@ -1,0 +1,108 @@
+@page "/tasks/edit/{Id:int}"
+@using OnCheck.Shared.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<LoginGuard>
+    <!-- Página protegida começa aqui -->
+
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OnCheck</title>
+    <link rel="stylesheet" href="css/TaskEdit.css" />
+</head>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private TaskItem task = new();
+    private List<User> users = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        task = await Http.GetFromJsonAsync<TaskItem>($"api/tasks/{Id}") ?? new();
+        users = await Http.GetFromJsonAsync<List<User>>("api/users") ?? new();
+    }
+
+    private async Task SaveChanges()
+    {
+        await Http.PutAsJsonAsync($"api/tasks/{task.Id}", task);
+        NavigationManager.NavigateTo("/tasks");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/tasks");
+    }
+
+    private void SetDifficulty(string level)
+    {
+        task.Difficulty = level;
+    }
+
+    private void GoToTaskList() => NavigationManager.NavigateTo("/tasks");
+    private void GoToAddTask() => NavigationManager.NavigateTo("/tasks/add");
+    private void Logout() => NavigationManager.NavigateTo("/");
+}
+
+<!-- Navbar -->
+<header class="navbar bg-light px-4 py-2 shadow-sm d-flex justify-between items-center mb-4">
+    <div class="d-flex align-items-center">
+        <img src="media/OnCheckLogo.jpg" alt="Logo" style="height: 30px;" />
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" @onclick="GoToTaskList">Task List</button>
+        <button class="btn btn-outline-secondary" @onclick="GoToAddTask">Add New Task</button>
+        <button class="btn btn-danger btn-outline-secondary" @onclick="Logout">Logout</button>
+    </div>
+</header>
+
+<!-- Formulário de edição -->
+<div class="container">
+    <h2>Edit Task</h2>
+
+    <div class="mb-3">
+        <label class="form-label">Title</label>
+        <input class="form-control" @bind="task.Title" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">User</label>
+        <select class="form-select" @bind="task.UserId">
+            <option value="">-- Selecione --</option>
+            @foreach (var user in users)
+            {
+                <option value="@user.Id">@user.FirstName</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" rows="4" @bind="task.Description"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Difficulty</label>
+        <div class="btn-group">
+            <button class="btn @(task.Difficulty == "Easy" ? "btn-success" : "btn-outline-success")" @onclick='() => SetDifficulty("Easy")'>Easy</button>
+            <button class="btn @(task.Difficulty == "Medium" ? "btn-warning" : "btn-outline-warning")" @onclick='() => SetDifficulty("Medium")'>Medium</button>
+            <button class="btn @(task.Difficulty == "Hard" ? "btn-danger" : "btn-outline-danger")" @onclick='() => SetDifficulty("Hard")'>Hard</button>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Due Date</label>
+        <input type="date" class="form-control" @bind="task.DueDate" />
+    </div>
+
+    <div class="d-flex justify-content-end gap-2">
+        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        <button class="btn btn-primary" @onclick="SaveChanges">Save Changes</button>
+    </div>
+</div>
+
+
+</LoginGuard>

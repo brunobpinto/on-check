@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap');
+
+h1 {
+    font-size: medium;
+    font-weight: 700;
+}
+
+.lead {
+    font-weight: 600;
+}
+
+.highlight {
+    background: linear-gradient(to top, #F8A3B8 60%, transparent 40%);
+    padding: 0 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 16px; /* controla o espaço abaixo */
+}
+
+
+button {
+    font-weight: 600;
+}
+
+/* Home.css */
+
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+.homepage {
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
+    padding-left: 6rem;
+    padding-right: 6rem;
+    padding-top: 1rem;
+    padding-bottom: 5rem;
+    background-color: white;
+}
+
+.navbar-logo {
+    height: 36px;
+}
+
+.navbar-buttons .btn {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    font-weight: 600;
+    border-radius: 12px !important;
+}
+
+.hero-heading {
+    font-size: 3.3rem;
+    font-weight: 700;
+}
+
+.hero-subtext {
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.hero-button {
+    border-radius: 12px;
+    box-shadow: -7px 7px 0 #ACAAB2;
+    margin-top: 2.5rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.hero-video {
+    max-width: 350px;
+    box-shadow: none;
+}
+
+.contentBody {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    margin-left: 2rem;
+
+}

@@ -1,0 +1,232 @@
+@page "/tasks"
+@using OnCheck.Shared.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<LoginGuard>
+    <!-- Página protegida começa aqui -->
+
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OnCheck</title>
+    <link rel="stylesheet" href="css/TaskList.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+</head>
+
+@code {
+    private List<TaskItem> tasks = new();
+    private int? openTaskId = null;
+    private bool isMenuOpen = true;
+
+    private string statusFilter = "All";
+    private string difficultyFilter = "All";
+    private string searchTerm = string.Empty;
+    private string currentFilterName = "All Tasks";
+
+    private IEnumerable<TaskItem> FilteredTasks => tasks.Where(task =>
+        (statusFilter == "All" || (statusFilter == "Completed" && task.Completed) || (statusFilter == "Pending" && !task.Completed)) &&
+        (difficultyFilter == "All" || task.Difficulty == difficultyFilter) &&
+        (string.IsNullOrWhiteSpace(searchTerm) || (task.User?.FirstName?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false))
+    );
+
+    protected override async Task OnInitializedAsync()
+    {
+        statusFilter = "All";
+        difficultyFilter = "All";
+        currentFilterName = "All Tasks";
+        isMenuOpen = true;
+        tasks = await Http.GetFromJsonAsync<List<TaskItem>>("api/tasks") ?? new();
+    }
+
+    void ToggleAccordion(int id)
+    {
+        openTaskId = openTaskId == id ? null : id;
+    }
+
+    void ToggleMenu()
+    {
+        isMenuOpen = !isMenuOpen;
+    }
+
+    void EditTask(int id)
+    {
+        NavigationManager.NavigateTo($"/tasks/edit/{id}");
+    }
+
+    void GoToTaskList() => NavigationManager.NavigateTo("/tasks");
+    void GoToAddTask() => NavigationManager.NavigateTo("/tasks/add");
+    void Logout() => NavigationManager.NavigateTo("/");
+
+    async Task DeleteTask(int id)
+    {
+        await Http.DeleteAsync($"api/tasks/{id}");
+        tasks = await Http.GetFromJsonAsync<List<TaskItem>>("api/tasks") ?? new();
+        openTaskId = null;
+    }
+
+    async Task ToggleCompleted(TaskItem task)
+    {
+        task.Completed = !task.Completed;
+        await Http.PutAsJsonAsync($"api/tasks/{task.Id}", task);
+        if (openTaskId == task.Id)
+        {
+            openTaskId = null;
+        }
+    }
+
+    void SetStatusFilter(string status)
+    {
+        statusFilter = status;
+        currentFilterName = status switch
+        {
+            "Completed" => "Completed Tasks",
+            "Pending" => "Pending Tasks",
+            _ => "All Tasks"
+        };
+        openTaskId = null;
+    }
+
+    void SetDifficultyFilter(string difficulty)
+    {
+        difficultyFilter = difficulty;
+        currentFilterName = difficulty == "All" ? "All Tasks" : $"{difficulty} Tasks";
+        openTaskId = null;
+    }
+
+    void ClearDifficultyFilter()
+    {
+        difficultyFilter = "All";
+        currentFilterName = "All Tasks";
+        openTaskId = null;
+    }
+}
+
+<!-- Navbar -->
+<header class="navbar bg-light px-4 py-2 shadow-sm d-flex justify-between items-center">
+    <div class="d-flex align-items-center">
+        <img src="media/OnCheckLogo.jpg" alt="Logo" style="height: 30px;" />
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" @onclick="GoToTaskList">Task List</button>
+        <button class="btn btn-outline-secondary" @onclick="GoToAddTask">Add New Task</button>
+        <button class="btn btn-danger rounded-3" @onclick="Logout">Logout</button>
+    </div>
+</header>
+
+<!-- Layout Flexível com menu e painel de detalhes -->
+<div class="main-layout d-flex">
+    @if (isMenuOpen)
+    {
+        <div class="menu-sidebar shadow p-3 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">Menu</h5>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="ToggleMenu">✖</button>
+                </div>
+                <div class="search-container">
+                    <i class="bi bi-search"></i>
+                    <input type="text" placeholder="Search" @bind="searchTerm" @bind:event="oninput" />
+                </div>
+                <div class="sidebar-section-label mt-3">TASKS</div>
+                <button class="btn w-100 mb-1 text-start text-dark d-flex align-items-center gap-2 @(statusFilter == "All" ? "btn-primary" : "btn-light")" @onclick='() => SetStatusFilter("All")'>
+                    <i class="bi bi-list-task"></i> All Tasks
+                </button>
+                <button class="btn w-100 mb-1 text-start text-dark d-flex align-items-center gap-2 @(statusFilter == "Completed" ? "btn-primary" : "btn-light")" @onclick='() => SetStatusFilter("Completed")'>
+                    <i class="bi bi-check2-circle"></i> Completed
+                </button>
+
+                <button class="btn w-100 mb-1 text-start text-dark d-flex align-items-center gap-2 @(statusFilter == "Pending" ? "btn-primary" : "btn-light")" @onclick='() => SetStatusFilter("Pending")'>
+                    <i class="bi bi-hourglass-split"></i> Pending
+                </button>
+
+                <div class="sidebar-section-label mt-4">DIFFICULTIES</div>
+                <button class="btn w-100 mb-1 text-start @(difficultyFilter == "Easy" ? "btn-success text-dark" : "btn-outline-success")"
+                        @onclick='() => SetDifficultyFilter("Easy")'>
+                    Easy
+                </button>
+
+                <button class="btn w-100 mb-1 text-start @(difficultyFilter == "Medium" ? "btn-warning text-dark" : "btn-outline-warning")"
+                        @onclick='() => SetDifficultyFilter("Medium")'>
+                    Medium
+                </button>
+
+                <button class="btn w-100 mb-1 text-start @(difficultyFilter == "Hard" ? "btn-danger text-dark" : "btn-outline-danger")"
+                        @onclick='() => SetDifficultyFilter("Hard")'>
+                    Hard
+                </button>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-dark w-100" title="Limpar dificuldade" @onclick="ClearDifficultyFilter">Clear Difficulty</button>
+            </div>
+        </div>
+    }
+
+    <div class="flex-fill">
+        <!-- Conteúdo -->
+        <div class="container mt-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    @if (!isMenuOpen)
+                    {
+                        <button class="btn btn-outline-primary" @onclick="ToggleMenu">☰</button>
+                    }
+                    <h2 class="mb-0 d-flex align-items-center gap-2">
+                        @currentFilterName
+                        <span class="task-counter-large">@FilteredTasks.Count()</span>
+                    </h2>
+                </div>
+            </div>
+
+            @foreach (var task in FilteredTasks)
+            {
+                <div class="task-item border rounded p-3 mb-2 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="checkbox" checked="@task.Completed" @onchange="() => ToggleCompleted(task)" />
+                        <strong>@task.Title</strong>
+                    </div>
+                    <button class="btn btn-sm btn-link" @onclick="() => ToggleAccordion(task.Id)">▶</button>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (openTaskId.HasValue)
+    {
+        var task = tasks.FirstOrDefault(t => t.Id == openTaskId);
+        if (task != null)
+        {
+            <div class="task-details-sidebar">
+                <h4>@task.Title</h4>
+
+                <div class="task-detail-block">
+                    <strong>Description</strong>
+                    @task.Description
+                </div>
+
+                <div class="task-detail-block">
+                    <strong>Due Date</strong>
+                    @task.DueDate.ToShortDateString()
+                </div>
+
+                <div class="task-detail-block">
+                    <strong>Difficulty</strong>
+                    @task.Difficulty
+                </div>
+
+                <div class="task-detail-block">
+                    <strong>User</strong>
+                    @task.User?.FirstName
+                </div>
+
+                <div class="task-details-actions d-flex justify-content-between mt-auto">
+                    <button class="btn btn-delete flex-fill me-2" @onclick="() => DeleteTask(task.Id)">Delete Task</button>
+                    <button class="btn btn-edit flex-fill" @onclick="@(() => EditTask(task.Id))">Edit Task</button>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+</LoginGuard>

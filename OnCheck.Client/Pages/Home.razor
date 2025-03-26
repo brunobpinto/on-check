@@ -1,0 +1,41 @@
+@page "/"
+@inject NavigationManager NavigationManager
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OnCheck</title>
+    <link rel="stylesheet" href="css/Home.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+</head>
+
+<div class="homepage">
+    <!-- Navbar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-2 ms-3">
+            <img src="media/OnCheckLogo.jpg" alt="Logo" class="navbar-logo" />
+        </div>
+        <div class="d-flex gap-3 me-3 navbar-buttons">
+            <button class='btn btn-outline-dark' @onclick='() => NavigationManager.NavigateTo("/signin")'>Log in</button>
+            <button class='btn btn-dark' @onclick='() => NavigationManager.NavigateTo("/signup")'>Get started</button>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="contentBody">
+        <div class="col-md-6 ps-5">
+            <h1 class="hero-heading">
+                The <span class="highlight">only</span> to-do<br />
+                list you’ll <br />
+                ever need.
+            </h1>
+            <p class="lead text-muted hero-subtext">
+                Simplify work and life with the only to-do list designed<br>for you and your team to get things done.
+            </p>
+            <button class='btn btn-dark btn-lg hero-button' @onclick='() => NavigationManager.NavigateTo("/tasks")'>Get started</button>
+        </div>
+        <div class="col-md-6 text-center">
+            <video src="media/OnCheckHomeAnimation.mp4" autoplay loop muted playsinline alt="Checklist Image" class="hero-video"></video>
+        </div>
+    </div>
+</div>
